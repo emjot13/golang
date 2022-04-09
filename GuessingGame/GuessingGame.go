@@ -17,6 +17,7 @@ In this game you will be trying to guess some random number in the fewest tries 
 After each guess you will be shown a number of icons depending on the difficulty level.
 Among them is hidden one of 2 icons: up :"◓" and down: "◒".
 Up icon means your guess was too high, and down icon means your guess was too low.
+However you have to be quick, because the icons will disappear!
 If you want to stop playing type in the terminal "finish"
 Good luck!`
 
@@ -239,7 +240,7 @@ func playAgain() {
 
 func checkIfOptimal(gameRange, guesses int) {
 	if int(math.Floor(math.Logb(float64(gameRange))))+1 < guesses {
-		fmt.Println("The number can be found with less guesses. Maybe try to think about some algorithm :D")
+		fmt.Println("The number can be found with less guesses. Maybe try to think about some algorithm or be quicker :D")
 	}
 }
 
@@ -297,6 +298,36 @@ func difficultyLevel() int {
 	}
 }
 
+func guessing(level int) string {
+
+	var seconds int
+	switch level {
+	case 5: //easy
+		seconds = 2
+	case 10: // medium
+		seconds = 4
+	case 15: // hard
+		seconds = 5
+	case 25: // insane
+		seconds = 12
+	}
+	var input string
+	ch := make(chan string)
+	go func() {
+		fmt.Printf("Enter your guess\n")
+		fmt.Scan(&input)
+		ch <- input
+	}()
+	select {
+	case <-ch:
+		return input
+	case <-time.After(time.Duration(seconds) * time.Second):
+		fmt.Print(strings.Repeat("\n", 2000))
+		return "empty"
+	}
+}
+
+
 func main() {
 	if firstGameOfSession {
 		fmt.Println(welcomeString)
@@ -308,10 +339,18 @@ func main() {
 	numToGuess := generateNumber()
 	fmt.Println("Time start!")
 	start := time.Now()
+	var firstGuess bool
+	firstGuess = true
+	var guess string
 	for {
-		fmt.Println("Enter your guess")
-		var guess string
-		fmt.Scan(&guess)
+		if !firstGuess {
+			guess = guessing(size)
+		}
+		if guess == "empty" || firstGuess { // absolutely no idea why player has to enter input twice :(
+			fmt.Println("Enter your guess")
+			fmt.Scan(&guess)
+		}
+		firstGuess = false
 		if guess == "finish" { // first we check if string input is keyword "finish"
 			printScores()
 			fmt.Println("Goodbye!")

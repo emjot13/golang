@@ -303,13 +303,13 @@ func guessing(level int) string {
 	var seconds int
 	switch level {
 	case 5: //easy
-		seconds = 2
-	case 10: // medium
 		seconds = 4
+	case 10: // medium
+		seconds = 7
 	case 15: // hard
-		seconds = 5
+		seconds = 9
 	case 25: // insane
-		seconds = 12
+		seconds = 14
 	}
 	var input string
 	ch := make(chan string)
@@ -337,17 +337,21 @@ func main() {
 	size := difficultyLevel()
 	triesNumber := 1
 	numToGuess := generateNumber()
-	fmt.Println("Time start!")
-	start := time.Now()
 	var firstGuess bool
 	firstGuess = true
 	var guess string
+	start := time.Now()
 	for {
 		if !firstGuess {
 			guess = guessing(size)
-		}
-		if guess == "empty" || firstGuess { // absolutely no idea why player has to enter input twice :(
+		}else{
+			fmt.Println("Time start!")
 			fmt.Println("Enter your guess")
+			fmt.Scan(&guess)
+		}
+		if guess == "empty" { // absolutely no idea why player has to enter input twice :(
+			fmt.Println("You were too slow ;P")													// but it's not a bug it's a feaature
+			fmt.Println("Now you have to enter your last guess and then you can guess again")	// it doesnt do anything, though
 			fmt.Scan(&guess)
 		}
 		firstGuess = false

@@ -77,7 +77,7 @@ func createResultString() []string {
 		for i, v := range playerResults {
 			tmp += fmt.Sprintf("%v, %s", v.tries, v.time)
 			if i != len(playerResults)-1 {
-				tmp += " – "
+				tmp += " –– "
 			}
 		}
 		stringResults = append(stringResults, tmp)
@@ -364,11 +364,10 @@ func main() {
 		if err == nil {
 			switch {
 			case guessInt == numToGuess:
-				stop := strings.Split(fmt.Sprintf("%.2f", time.Since(start).Minutes()), ".")
-				stopString := stop[0] + " min " + stop[1] + " sec"
-				fmt.Printf("Congratulations, you guessed the number in %s in %d tries\n", stopString, triesNumber)
+				stop := time.Since(start).Truncate(time.Second).String()
+				fmt.Printf("Congratulations, you guessed the number in %s in %d tries\n", stop, triesNumber)
 				scoreTimeMap := make(map[int]string)
-				scoreTimeMap[triesNumber] = stopString
+				scoreTimeMap[triesNumber] = stop
 				checkIfOptimal(1+high-low, triesNumber)
 				name := getName()
 				addScore(score{name, scoreTimeMap})

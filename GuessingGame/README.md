@@ -7,7 +7,7 @@ This project implements known to all game of guessing a random number, but it in
 -   players can choose the range from which the number is generated
 -   players can create a file to save results
 -   players can load a file with previous games
--   player are informed when breaking the global and his personal record
+-   players are informed when breaking the global and personal record
 -   players are informed when the number of guesses was higher than optimal
 
 Feel free to check out the game yourself :D

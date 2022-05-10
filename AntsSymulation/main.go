@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"math/rand"
-	// "os"
-	// "os/exec"
+	"os"
+	"os/exec"
 	"strings"
 	"time"
 )
@@ -73,21 +73,23 @@ func moveAnts(matrix [][]string){
 		availableMoves := getPossibleMoves(i, matrix)
 		randomIndex := rand.Intn(len(availableMoves))
 		x, y := availableMoves[randomIndex][0], availableMoves[randomIndex][1]
-		fmt.Println(x, y, matrix[y][x])
+		// fmt.Println(x, y, matrix[y][x])
 		var foundLeaf bool
-		for _, leaf := range allLeafsPositions{
+		for index, leaf := range allLeafsPositions{
 			if leaf.onGround{
-				if matrix[y][x] == "🍂"{
-					fmt.Println("here")
+				if leaf.x == x && leaf.y == y{
+					// fmt.Println("here")
 					foundLeaf = true
 					if !ant.withLeaf{
 					ant.withLeaf = true
 					leaf.onGround = false
-					matrix[ant.y][ant.x] = "🪲"
+					matrix[ant.y][ant.x] = "🪲 "
 					matrix[y][x] = "🔲"
+					allLeafsPositions[index] = leafPosition{leaf.x, leaf.y, leaf.onGround}
 					break
 				}
 				if ant.withLeaf{
+					// fmt.Println(leaf.x, leaf.y, x == leaf.x && leaf.y == y)
 					var indexes []int
 					for i := 0; i < len(availableMoves); i++{
 						indexes = append(indexes, i)
@@ -95,13 +97,15 @@ func moveAnts(matrix [][]string){
 					rand.Shuffle(len(indexes), func(i, j int) { indexes[i], indexes[j] = indexes[j], indexes[i]})
 					for i := range indexes{
 						x1, y1 := availableMoves[indexes[i]][0], availableMoves[indexes[i]][1]
-						fmt.Println("x mrówki", ant.x, "y mrówki", ant.y, "x liścia", leaf.x, "y liścia", leaf.y, "nowy ruch", x1, y1, matrix[y1][x1])
+						// fmt.Println("x mrówki", ant.x, "y mrówki", ant.y, "x liścia", leaf.x, "y liścia", leaf.y, "nowy ruch", x1, y1, matrix[y1][x1])
 						if matrix[y1][x1] == "🔲"{
-							matrix[ant.y][ant.x] = "🐜"
-							// fmt.Println("x mrówki", ant.x, "y mrówki", ant.y, "x liścia", leaf.x, "y liścia", leaf.y, "nowy ruch", x1, y1, matrix[y1][x1])
-							matrix[y1][x1] = "🍂"
-							allLeafsPositions = append(allLeafsPositions, leafPosition{x1, y1, true})
+							matrix[ant.y][ant.x] = "🐞"
 							ant.withLeaf = false
+							matrix[y1][x1] = "🍂"
+							// fmt.Println("x mrówki", ant.x, "y mrówki", ant.y, "x liścia", leaf.x, "y liścia", leaf.y, "nowy ruch", x1, y1, matrix[y1][x1])
+							allLeafsPositions = append(allLeafsPositions, leafPosition{x1, y1, true})
+							// ant.withLeaf = false
+							// ant.x, ant.y = x1, y1
 							break
 						}
 					}
@@ -113,16 +117,40 @@ func moveAnts(matrix [][]string){
 			}
 		}
 
-		if !foundLeaf {
+		if !foundLeaf && matrix[y][x] != "🐞" && matrix[y][x] != "🪲 "{
+			// fmt.Println("here")
 			matrix[ant.y][ant.x] = "🔲"
 			if ant.withLeaf {
-				matrix[y][x] = "🪲"
+				matrix[y][x] = "🪲 "
 			}else{
-			matrix[y][x] = "🐜"}
+			matrix[y][x] = "🐞"}
 			ant.x, ant.y = x, y
+		}else if matrix[y][x] == "🐞" || matrix[y][x] == "🪲 "{
+			var indexes []int
+					for i := 0; i < len(availableMoves); i++{
+						indexes = append(indexes, i)
+					}
+					rand.Shuffle(len(indexes), func(i, j int) { indexes[i], indexes[j] = indexes[j], indexes[i]})
+					for i := range indexes{
+						x2, y2 := availableMoves[indexes[i]][0], availableMoves[indexes[i]][1]
+						// fmt.Println("x mrówki", ant.x, "y mrówki", ant.y, "x liścia", leaf.x, "y liścia", leaf.y, "nowy ruch", x1, y1, matrix[y1][x1])
+						if matrix[y2][x2] == "🔲"{
+							matrix[ant.y][ant.x] = "🔲"
+							ant.x, ant.y = x2, y2
+							if ant.withLeaf{
+								matrix[y2][x2] = "🪲 "
+							}else{
+								matrix[y2][x2] = "🐞"
+							}
+							
+							// ant.withLeaf = false
+							// ant.x, ant.y = x1, y1
+							break
+						}
+					}
 		}
 		allAntsPositions[i] = antPosition{ant.x, ant.y, ant.withLeaf}
-		fmt.Println(allAntsPositions[i])
+		// fmt.Println(allAntsPositions[i])
 
 	}
 
@@ -175,13 +203,13 @@ func createMatrix(matrixLength, matrixWidth, antsNumber, leafsNumber int)[][]str
 	}
 	
 	for i := 0; i < antsNumber; i++ {
-		x, y := shuffled[i][1], shuffled[i][0]
-		allAntsPositions = append(allAntsPositions, antPosition{y, x, false})
-		matrix[x][y] = "🐜"
+		y, x := shuffled[i][1], shuffled[i][0]
+		allAntsPositions = append(allAntsPositions, antPosition{x, y, false})
+		matrix[y][x] = "🐞"
 	}
 
 	for i := antsNumber; i < antsNumber + leafsNumber; i++ {
-		x, y := shuffled[i][0], shuffled[i][1]
+		y, x := shuffled[i][1], shuffled[i][0]
 		allLeafsPositions = append(allLeafsPositions, leafPosition{x, y, true})
 		matrix[y][x] = "🍂"
 	}
@@ -190,33 +218,45 @@ func createMatrix(matrixLength, matrixWidth, antsNumber, leafsNumber int)[][]str
 }
 
 func printMatrix(matrix [][]string){
-	j := 0
-	fmt.Printf("   ")
-	for i := 0; i<len(matrix); i++{
-		fmt.Printf("%d  ", i)
-	}
-	fmt.Printf("\n")
+	// j := 0
+	// fmt.Printf("   ")
+	// for i := 0; i<len(matrix); i++{
+	// 	fmt.Printf("%d  ", i)
+	// }
+	// fmt.Printf("\n")
 	for _, list := range matrix {
-		fmt.Println(j, strings.Join(list[:], " "))
-		j++
+		fmt.Println( strings.Join(list[:], " "))
+	
+		// j++
 	}
+}
+
+
+
+func clearTerminal(){
+	time.Sleep(1 * time.Second)
+	cmd := exec.Command("clear")
+	cmd.Stdout = os.Stdout
+	cmd.Run()
 }
 
 func main(){
 	rand.Seed(time.Now().UnixNano())
-	matrix := createMatrix(10, 10, 1, 10)
-	// printMatrix(matrix)
-	for i := 0; i < 50; i++ {
+	matrix := createMatrix(50, 50, 100, 500)
+	printMatrix(matrix)
+	clearTerminal()
+	for i := 0; i < 5000; i++ {
 		moveAnts(matrix)
 		fmt.Printf("\n\n\n")
 		printMatrix(matrix)
-		// time.Sleep(1 * time.Second)
-	// 	if i != 35{
-	// 	cmd := exec.Command("clear")
-	// 	cmd.Stdout = os.Stdout
-	// 	cmd.Run()
-	// }	
+	// fmt.Println(allAntsPositions)
+
+		if i != 4999{
+		clearTerminal()
+	}	
 
 }
+	// fmt.Println(len(allAntsPositions))
+	
 }
 
